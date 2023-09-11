@@ -11,6 +11,21 @@
     "start": "nuxt start"
   },
   "dependencies": {
-    "vuetify": "^3.3.15"
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "nuxt": "^1.0.0",
+    "renderkid": "^3.0.0",
+    "vue-notifications": "^0.9.0",
+    "vuetify": "^3.3.15",
+    "renderkid": "^3.0.0",
+    "server-destroy": "^1.0.1",
+    "vue-notifications": "^0.9.0",
+    "babel-eslint": "^8.2.1",
+    "eslint": "^4.15.0",
+    "eslint-friendly-formatter": "^3.0.0",
+    "eslint-loader": "^1.7.1",
+    "eslint-plugin-vue": "^4.0.0",
+    "@vue/server-renderer": "^3.3.4",
+    "@vue/compiler-sfc": "^3.3.4"
   }
 }
