@@ -1,0 +1,62 @@
+<template>
+  <v-container>
+    <v-file-input
+      v-model="selectedFile"
+      :label="label"
+      :show-size="showSize"
+      @change="onFileChange"
+      @drop="onFileDrop"
+    ></v-file-input>
+
+    <v-btn @click="uploadFile">Upload</v-btn>
+
+    <!-- アップロードされたファイルの情報を表示 -->
+    <v-card v-if="uploadedFile">
+      <v-card-title>Uploaded File Info</v-card-title>
+      <v-card-text>
+        <div>File Name: {{ uploadedFile.name }}</div>
+        <div>File Size: {{ uploadedFile.size }} bytes</div>
+        <!-- 他の情報も必要に応じて表示 -->
+      </v-card-text>
+    </v-card>
+  </v-container>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      selectedFile: null,
+      label: 'Select a file',
+      showSize: true,
+      uploadedFile: null,
+    };
+  },
+  methods: {
+    onFileChange() {
+      console.log('Selected file:', this.selectedFile);
+    },
+    onFileDrop(files) {
+      // ドラッグ&ドロップでファイルが追加されたときに呼ばれる
+      console.log('Dropped files:', files);
+      this.selectedFile = files[0]; // ドロップされたファイルを選択状態にセット
+    },
+    uploadFile() {
+      // サーバーサイドにファイルを送信する処理を実装
+      const formData = new FormData();
+      formData.append('file', this.selectedFile);
+
+      // サーバーサイドのAPIエンドポイントにPOSTリクエストを送信
+      this.$axios.post('/api/upload', formData)
+        .then(response => {
+          // アップロードが成功した場合の処理
+          this.uploadedFile = response.data;
+        })
+        .catch(error => {
+          // アップロードが失敗した場合の処理
+          console.error('Upload failed:', error);
+        });
+    },
+  },
+};
+</script>
