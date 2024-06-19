@@ -7,7 +7,7 @@
     </div>
     <div class="grid-header">
       <div class="header-cell checkbox-cell">
-        <input type="checkbox" @change="selectAllRows" v-model="selectAll">
+        <input type="checkbox" @change="selectAllRows">
       </div>
       <div v-for="(column, index) in columns" :key="index" class="header-cell" :style="{ width: column.width + 'px' }">
         {{ column.label }}
@@ -16,14 +16,13 @@
     <div class="grid-body" ref="gridBody" @scroll="handleScroll" :style="{ height: bodyHeight + 'px' }">
       <div :style="{ height: totalHeight + 'px' }">
         <div v-for="(row, rowIndex) in visibleRows" :key="rowIndex"
-             v-if="matchesFilter(row)"
              class="grid-row"
-             :class="{ 'selected-row': selectedRows.includes(row.id), 'hovered-row': rowIndex === hoveredRowIndex }"
-             @click="selectRow(row.id)"
+             :class="{ 'selected-row': isSelected(rowIndex), 'hovered-row': rowIndex === hoveredRowIndex }"
+             @click="selectRow(rowIndex)"
              @mouseover="hoveredRowIndex = rowIndex"
              @mouseleave="hoveredRowIndex = null">
           <div class="row-cell checkbox-cell">
-            <input type="checkbox" :checked="isSelected(row.id)" @change="toggleSelection(row.id)">
+            <input type="checkbox" :checked="isSelected(rowIndex)" @change="selectRow(rowIndex)">
           </div>
           <div v-for="(column, colIndex) in columns" :key="colIndex" class="row-cell" :style="{ width: column.width + 'px' }">
             {{ row[column.field] }}
@@ -60,13 +59,11 @@ export default {
   },
   data() {
     return {
-      selectedRows: [], // 選択された行のIDを格納する配列
+      selectedRows: [],
       hoveredRowIndex: null,
       itemHeight: 40, // デフォルトの行の高さ
       startIndex: 0, // 表示する最初の行のインデックス
-      endIndex: this.visibleRowCount - 1, // 表示する最後の行のインデックス
-      filterKey: '', // フィルタリングするキーワードを保持するデータ
-      selectAll: false // 全選択チェックボックスの状態
+      endIndex: this.visibleRowCount - 1 // 表示する最後の行のインデックス
     };
   },
   computed: {
@@ -98,26 +95,19 @@ export default {
     updateVisibleRows() {
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
-    selectRow(rowId) {
-      if (this.isSelected(rowId)) {
-        this.selectedRows = this.selectedRows.filter(id => id !== rowId);
+    selectRow(rowIndex) {
+      if (this.isSelected(rowIndex)) {
+        this.selectedRows = this.selectedRows.filter(row => row !== rowIndex);
       } else {
-        this.selectedRows.push(rowId);
+        this.selectedRows.push(rowIndex);
       }
     },
-    toggleSelection(rowId) {
-      if (this.isSelected(rowId)) {
-        this.selectedRows = this.selectedRows.filter(id => id !== rowId);
-      } else {
-        this.selectedRows.push(rowId);
-      }
-    },
-    isSelected(rowId) {
-      return this.selectedRows.includes(rowId);
+    isSelected(rowIndex) {
+      return this.selectedRows.includes(rowIndex);
     },
     selectAllRows(event) {
       if (event.target.checked) {
-        this.selectedRows = this.data.map(row => row.id);
+        this.selectedRows = Array.from(Array(this.data.length).keys());
       } else {
         this.selectedRows = [];
       }
@@ -131,22 +121,6 @@ export default {
       // フィルタリング処理
       this.startIndex = 0; // フィルタリング後は先頭から表示
       this.endIndex = this.visibleRowCount - 1;
-    },
-    matchesFilter(row) {
-      // フィルタリング条件にマッチするかどうかを判定
-      const filterKey = this.filterKey.toLowerCase();
-      return Object.values(row).some(value => {
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(filterKey);
-        }
-        return false;
-      });
-    },
-    getSelectedRows() {
-      return this.selectedRows.map(id => this.data.find(row => row.id === id));
-    },
-    getAllRows() {
-      return this.data;
     }
   }
 };
