@@ -63,7 +63,8 @@ export default {
       hoveredRowIndex: null,
       itemHeight: 40, // デフォルトの行の高さ
       startIndex: 0, // 表示する最初の行のインデックス
-      endIndex: this.visibleRowCount - 1 // 表示する最後の行のインデックス
+      endIndex: this.visibleRowCount - 1, // 表示する最後の行のインデックス
+      filterKey: '' // フィルタリングするキーワードを保持するデータ
     };
   },
   computed: {
@@ -93,7 +94,6 @@ export default {
   },
   methods: {
     updateVisibleRows() {
-      // 表示する最後の行インデックスを再計算
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
     selectRow(rowIndex) {
@@ -115,13 +115,10 @@ export default {
     },
     handleScroll() {
       const scrollTop = this.$refs.gridBody.scrollTop;
-      // startIndex をスクロール位置に基づいて更新
       this.startIndex = Math.floor(scrollTop / this.itemHeight);
-      // endIndex も再計算
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
     filterData() {
-      // フィルタリング処理
       this.startIndex = 0; // フィルタリング後は先頭から表示
       this.endIndex = this.visibleRowCount - 1;
     }
