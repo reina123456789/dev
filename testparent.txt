@@ -1,0 +1,52 @@
+<template>
+  <div>
+    <CustomGrid
+      :data="gridData"
+      :columns="gridColumns"
+      :grid-width="800"
+      :grid-height="600"
+      :visible-row-count="15"
+    />
+  </div>
+</template>
+
+<script>
+import CustomGrid from './CustomGrid.vue';
+
+export default {
+  components: {
+    CustomGrid
+  },
+  data() {
+    return {
+      gridData: [
+        { id: 1, name: 'John Doe', age: 30 },
+        { id: 2, name: 'Jane Smith', age: 25 },
+        { id: 3, name: 'Michael Johnson', age: 35 },
+        { id: 4, name: 'Emily Davis', age: 28 },
+        { id: 5, name: 'David Brown', age: 32 },
+        { id: 6, name: 'Emma Wilson', age: 29 },
+        { id: 7, name: 'James White', age: 31 },
+        { id: 8, name: 'Olivia Martinez', age: 27 },
+        { id: 9, name: 'William Taylor', age: 33 },
+        { id: 10, name: 'Sophia Anderson', age: 26 },
+        { id: 11, name: 'Alexander Thomas', age: 34 },
+        { id: 12, name: 'Isabella Garcia', age: 30 },
+        { id: 13, name: 'Mason Lopez', age: 29 },
+        { id: 14, name: 'Ella Harris', age: 31 },
+        { id: 15, name: 'Jacob Clark', age: 28 },
+        { id: 16, name: 'Ava Rodriguez', age: 32 },
+        { id: 17, name: 'Liam Lewis', age: 27 },
+        { id: 18, name: 'Charlotte Lee', age: 33 },
+        { id: 19, name: 'Logan Walker', age: 26 },
+        { id: 20, name: 'Amelia Hall', age: 34 }
+      ],
+      gridColumns: [
+        { label: 'ID', field: 'id', width: 100 },
+        { label: 'Name', field: 'name', width: 200 },
+        { label: 'Age', field: 'age', width: 100 }
+      ]
+    };
+  }
+};
+</script>

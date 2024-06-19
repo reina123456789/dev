@@ -1,0 +1,194 @@
+<template>
+  <div class="custom-grid" :style="{ width: gridWidth + 'px', height: gridHeight + 'px' }">
+    <div class="filter-controls">
+      <label for="filterColumn">Filter Column:</label>
+      <select id="filterColumn" v-model="filter.column">
+        <option v-for="(column, index) in columns" :key="index" :value="column.field">
+          {{ column.label }}
+        </option>
+      </select>
+      <label for="filterValue">Filter Value:</label>
+      <input id="filterValue" v-model="filter.value" type="text">
+      <button @click="applyFilter">Apply Filter</button>
+    </div>
+    <div class="grid-header">
+      <div class="header-cell checkbox-cell">
+        <input type="checkbox" @change="selectAllRows">
+      </div>
+      <div v-for="(column, index) in columns" :key="index" class="header-cell" :style="{ width: column.width + 'px' }">
+        {{ column.label }}
+      </div>
+    </div>
+    <div class="grid-body" ref="gridBody" @scroll="handleScroll">
+      <div :style="{ height: bodyHeight + 'px' }">
+        <div v-for="(row, rowIndex) in filteredRows" :key="rowIndex"
+             class="grid-row"
+             :class="{ 'selected-row': selectedRows.includes(rowIndex), 'hovered-row': rowIndex === hoveredRowIndex }"
+             @click="selectRow(rowIndex)"
+             @mouseover="hoveredRowIndex = rowIndex"
+             @mouseleave="hoveredRowIndex = null">
+          <div class="row-cell checkbox-cell">
+            <input type="checkbox" @change="selectRow(rowIndex)">
+          </div>
+          <div v-for="(column, colIndex) in columns" :key="colIndex" class="row-cell" :style="{ width: column.width + 'px' }">
+            {{ row[column.field] }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    data: {
+      type: Array,
+      required: true
+    },
+    columns: {
+      type: Array,
+      required: true
+    },
+    gridWidth: {
+      type: Number,
+      default: 600
+    },
+    gridHeight: {
+      type: Number,
+      default: 400
+    },
+    visibleRowCount: {
+      type: Number,
+      default: 10 // デフォルトで10行を表示
+    }
+  },
+  data() {
+    return {
+      selectedRows: [],
+      hoveredRowIndex: null,
+      itemHeight: 40, // デフォルトの行の高さ
+      startIndex: 0, // 表示する最初の行のインデックス
+      endIndex: this.visibleRowCount - 1, // 表示する最後の行のインデックス
+      filter: {
+        column: '', // フィルタリングするカラム
+        value: ''   // フィルタリングする値
+      }
+    };
+  },
+  computed: {
+    totalHeight() {
+      return this.data.length * this.itemHeight;
+    },
+    bodyHeight() {
+      return Math.min(this.gridHeight, this.data.length * this.itemHeight);
+    },
+    filteredRows() {
+      if (!this.filter.column || !this.filter.value) {
+        return this.data.slice(this.startIndex, this.endIndex + 1);
+      } else {
+        return this.data.filter(row => {
+          const cellValue = row[this.filter.column];
+          return cellValue && cellValue.toString().toLowerCase().includes(this.filter.value.toLowerCase());
+        }).slice(this.startIndex, this.endIndex + 1);
+      }
+    }
+  },
+  watch: {
+    data() {
+      this.updateVisibleRows();
+    },
+    gridHeight() {
+      this.updateVisibleRows();
+    },
+    visibleRowCount() {
+      this.updateVisibleRows();
+    }
+  },
+  mounted() {
+    this.updateVisibleRows();
+  },
+  methods: {
+    updateVisibleRows() {
+      this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
+    },
+    selectRow(rowIndex) {
+      if (this.selectedRows.includes(rowIndex)) {
+        this.selectedRows = this.selectedRows.filter(row => row !== rowIndex);
+      } else {
+        this.selectedRows.push(rowIndex);
+      }
+    },
+    selectAllRows(event) {
+      if (event.target.checked) {
+        this.selectedRows = Array.from(Array(this.data.length).keys());
+      } else {
+        this.selectedRows = [];
+      }
+    },
+    handleScroll() {
+      const scrollTop = this.$refs.gridBody.scrollTop;
+      this.startIndex = Math.floor(scrollTop / this.itemHeight);
+      this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
+    },
+    applyFilter() {
+      this.updateVisibleRows(); // フィルター適用時に表示行数を更新する必要があるかもしれません
+    },
+    getSelectedRowData() {
+      return this.selectedRows.map(rowIndex => this.data[rowIndex]);
+    },
+    getAllData() {
+      return this.data;
+    }
+  }
+};
+</script>
+
+<style scoped>
+.custom-grid {
+  border: 1px solid #ccc;
+  overflow: hidden;
+}
+
+.grid-header, .grid-body {
+  display: flex;
+}
+
+.header-cell, .row-cell {
+  padding: 8px 12px;
+  border-right: 1px solid #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checkbox-cell {
+  flex: 0 0 40px; /* Adjust width as needed */
+}
+
+.grid-row {
+  display: flex;
+}
+
+.selected-row {
+  background-color: #cce5ff;
+}
+
+.hovered-row {
+  background-color: #f0f0f0;
+}
+
+.filter-controls {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.filter-controls label {
+  margin-right: 8px;
+}
+
+.filter-controls button {
+  margin-left: 8px;
+}
+</style>
