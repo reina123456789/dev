@@ -7,7 +7,7 @@
     </div>
     <div class="grid-header">
       <div class="header-cell checkbox-cell">
-        <input type="checkbox" @change="selectAllRows">
+        <input type="checkbox" @change="selectAllRows" v-model="selectAll">
       </div>
       <div v-for="(column, index) in columns" :key="index" class="header-cell" :style="{ width: column.width + 'px' }">
         {{ column.label }}
@@ -23,7 +23,7 @@
              @mouseover="hoveredRowIndex = rowIndex"
              @mouseleave="hoveredRowIndex = null">
           <div class="row-cell checkbox-cell">
-            <input type="checkbox" :checked="selectedRows.includes(row.id)" @change="selectRow(row.id)">
+            <input type="checkbox" :checked="isSelected(row.id)" @change="toggleSelection(row.id)">
           </div>
           <div v-for="(column, colIndex) in columns" :key="colIndex" class="row-cell" :style="{ width: column.width + 'px' }">
             {{ row[column.field] }}
@@ -60,12 +60,13 @@ export default {
   },
   data() {
     return {
-      selectedRows: [], // 選択された行のIDを格納する配列に変更
+      selectedRows: [], // 選択された行のIDを格納する配列
       hoveredRowIndex: null,
       itemHeight: 40, // デフォルトの行の高さ
       startIndex: 0, // 表示する最初の行のインデックス
       endIndex: this.visibleRowCount - 1, // 表示する最後の行のインデックス
-      filterKey: '' // フィルタリングするキーワードを保持するデータ
+      filterKey: '', // フィルタリングするキーワードを保持するデータ
+      selectAll: false // 全選択チェックボックスの状態
     };
   },
   computed: {
@@ -98,11 +99,21 @@ export default {
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
     selectRow(rowId) {
-      if (this.selectedRows.includes(rowId)) {
+      if (this.isSelected(rowId)) {
         this.selectedRows = this.selectedRows.filter(id => id !== rowId);
       } else {
         this.selectedRows.push(rowId);
       }
+    },
+    toggleSelection(rowId) {
+      if (this.isSelected(rowId)) {
+        this.selectedRows = this.selectedRows.filter(id => id !== rowId);
+      } else {
+        this.selectedRows.push(rowId);
+      }
+    },
+    isSelected(rowId) {
+      return this.selectedRows.includes(rowId);
     },
     selectAllRows(event) {
       if (event.target.checked) {
@@ -130,6 +141,12 @@ export default {
         }
         return false;
       });
+    },
+    getSelectedRows() {
+      return this.selectedRows.map(id => this.data.find(row => row.id === id));
+    },
+    getAllRows() {
+      return this.data;
     }
   }
 };
