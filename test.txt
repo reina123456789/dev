@@ -5,31 +5,33 @@
       <label>フィルター:</label>
       <input type="text" v-model="filterKey" @input="filterData">
     </div>
-    <div class="grid-header">
-      <div class="header-cell checkbox-cell">
-        <input type="checkbox" @change="selectAllRows">
-      </div>
-      <div v-for="(column, index) in columns" :key="index" class="header-cell" :style="{ width: column.width + 'px' }">
-        {{ column.label }}
-      </div>
-    </div>
-    <div class="grid-body" ref="gridBody" @scroll="handleScroll" :style="{ height: bodyHeight + 'px' }">
-      <div :style="{ height: totalHeight + 'px' }">
-        <div v-for="(row, rowIndex) in visibleRows" :key="rowIndex"
-             class="grid-row"
-             :class="{ 'selected-row': isSelected(rowIndex), 'hovered-row': rowIndex === hoveredRowIndex }"
-             @click="selectRow(rowIndex)"
-             @mouseover="hoveredRowIndex = rowIndex"
-             @mouseleave="hoveredRowIndex = null">
-          <div class="row-cell checkbox-cell">
+    <table class="grid-table">
+      <thead>
+        <tr class="grid-header">
+          <th class="checkbox-cell">
+            <input type="checkbox" @change="selectAllRows">
+          </th>
+          <th v-for="(column, index) in columns" :key="index" :style="{ width: column.width + 'px' }">
+            {{ column.label }}
+          </th>
+        </tr>
+      </thead>
+      <tbody class="grid-body" ref="gridBody" @scroll="handleScroll" :style="{ height: bodyHeight + 'px' }">
+        <tr v-for="(row, rowIndex) in visibleRows" :key="rowIndex"
+            class="grid-row"
+            :class="{ 'selected-row': isSelected(rowIndex), 'hovered-row': rowIndex === hoveredRowIndex }"
+            @click="selectRow(rowIndex)"
+            @mouseover="hoveredRowIndex = rowIndex"
+            @mouseleave="hoveredRowIndex = null">
+          <td class="checkbox-cell">
             <input type="checkbox" :checked="isSelected(rowIndex)" @change="selectRow(rowIndex)">
-          </div>
-          <div v-for="(column, colIndex) in columns" :key="colIndex" class="row-cell" :style="{ width: column.width + 'px' }">
+          </td>
+          <td v-for="(column, colIndex) in columns" :key="colIndex" :style="{ width: column.width + 'px' }">
             {{ row[column.field] }}
-          </div>
-        </div>
-      </div>
-    </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -113,8 +115,8 @@ export default {
         this.selectedRows = [];
       }
     },
-    handleScroll() {
-      const scrollTop = this.$refs.gridBody.scrollTop;
+    handleScroll(event) {
+      const scrollTop = event.target.scrollTop;
       this.startIndex = Math.floor(scrollTop / this.itemHeight);
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
@@ -133,11 +135,16 @@ export default {
   max-height: 400px; /* グリッドの高さを制限 */
 }
 
+.grid-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
 .grid-header, .grid-body {
   display: flex;
 }
 
-.header-cell, .row-cell {
+.grid-header th, .grid-body td {
   padding: 8px 12px;
   border-right: 1px solid #ccc;
   white-space: nowrap;
