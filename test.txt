@@ -1,5 +1,10 @@
 <template>
   <div class="custom-grid" :style="{ width: gridWidth + 'px', height: gridHeight + 'px' }">
+    <!-- フィルタリング入力欄 -->
+    <div class="filter">
+      <label>フィルター:</label>
+      <input type="text" v-model="filterKey" @input="filterData">
+    </div>
     <div class="grid-header">
       <div class="header-cell checkbox-cell">
         <input type="checkbox" @change="selectAllRows">
@@ -11,6 +16,7 @@
     <div class="grid-body" ref="gridBody" @scroll="handleScroll" :style="{ height: bodyHeight + 'px' }">
       <div :style="{ height: totalHeight + 'px' }">
         <div v-for="(row, rowIndex) in visibleRows" :key="rowIndex"
+             v-if="matchesFilter(row)"
              class="grid-row"
              :class="{ 'selected-row': selectedRows.includes(row.id), 'hovered-row': rowIndex === hoveredRowIndex }"
              @click="selectRow(row.id)"
@@ -58,7 +64,8 @@ export default {
       hoveredRowIndex: null,
       itemHeight: 40, // デフォルトの行の高さ
       startIndex: 0, // 表示する最初の行のインデックス
-      endIndex: this.visibleRowCount - 1 // 表示する最後の行のインデックス
+      endIndex: this.visibleRowCount - 1, // 表示する最後の行のインデックス
+      filterKey: '' // フィルタリングするキーワードを保持するデータ
     };
   },
   computed: {
@@ -108,6 +115,21 @@ export default {
       const scrollTop = this.$refs.gridBody.scrollTop;
       this.startIndex = Math.floor(scrollTop / this.itemHeight);
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
+    },
+    filterData() {
+      // フィルタリング処理
+      this.startIndex = 0; // フィルタリング後は先頭から表示
+      this.endIndex = this.visibleRowCount - 1;
+    },
+    matchesFilter(row) {
+      // フィルタリング条件にマッチするかどうかを判定
+      const filterKey = this.filterKey.toLowerCase();
+      return Object.values(row).some(value => {
+        if (typeof value === 'string') {
+          return value.toLowerCase().includes(filterKey);
+        }
+        return false;
+      });
     }
   }
 };
@@ -146,5 +168,9 @@ export default {
 
 .hovered-row {
   background-color: #f0f0f0;
+}
+
+.filter {
+  margin-bottom: 10px;
 }
 </style>
