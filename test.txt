@@ -93,6 +93,7 @@ export default {
   },
   methods: {
     updateVisibleRows() {
+      // 表示する最後の行インデックスを再計算
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
     selectRow(rowIndex) {
@@ -114,7 +115,9 @@ export default {
     },
     handleScroll() {
       const scrollTop = this.$refs.gridBody.scrollTop;
+      // startIndex をスクロール位置に基づいて更新
       this.startIndex = Math.floor(scrollTop / this.itemHeight);
+      // endIndex も再計算
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
     filterData() {
