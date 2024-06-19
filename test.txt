@@ -5,33 +5,35 @@
       <label>フィルター:</label>
       <input type="text" v-model="filterKey" @input="filterData">
     </div>
-    <table class="grid-table">
-      <thead>
-        <tr class="grid-header">
-          <th class="checkbox-cell">
-            <input type="checkbox" @change="selectAllRows">
-          </th>
-          <th v-for="(column, index) in columns" :key="index" :style="{ width: column.width + 'px' }">
-            {{ column.label }}
-          </th>
-        </tr>
-      </thead>
-      <tbody class="grid-body" ref="gridBody" @scroll="handleScroll" :style="{ height: bodyHeight + 'px' }">
-        <tr v-for="(row, rowIndex) in visibleRows" :key="rowIndex"
-            class="grid-row"
-            :class="{ 'selected-row': isSelected(rowIndex), 'hovered-row': rowIndex === hoveredRowIndex }"
-            @click="selectRow(rowIndex)"
-            @mouseover="hoveredRowIndex = rowIndex"
-            @mouseleave="hoveredRowIndex = null">
-          <td class="checkbox-cell">
-            <input type="checkbox" :checked="isSelected(rowIndex)" @change="selectRow(rowIndex)">
-          </td>
-          <td v-for="(column, colIndex) in columns" :key="colIndex" :style="{ width: column.width + 'px' }">
-            {{ row[column.field] }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="grid-body" ref="gridBody" @scroll="handleScroll" :style="{ height: bodyHeight + 'px' }">
+      <table class="grid-table">
+        <thead>
+          <tr class="header-row">
+            <th class="checkbox-cell">
+              <input type="checkbox" @change="selectAllRows">
+            </th>
+            <th v-for="(column, index) in columns" :key="index" :style="{ width: column.width + 'px' }">
+              {{ column.label }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, rowIndex) in visibleRows" :key="rowIndex"
+              class="grid-row"
+              :class="{ 'selected-row': isSelected(row), 'hovered-row': rowIndex === hoveredRowIndex }"
+              @click="selectRow(row)"
+              @mouseover="hoveredRowIndex = rowIndex"
+              @mouseleave="hoveredRowIndex = null">
+            <td class="checkbox-cell">
+              <input type="checkbox" :checked="isSelected(row)" @change="selectRow(row)">
+            </td>
+            <td v-for="(column, colIndex) in columns" :key="colIndex" :style="{ width: column.width + 'px' }">
+              {{ row[column.field] }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -66,7 +68,8 @@ export default {
       itemHeight: 40, // デフォルトの行の高さ
       startIndex: 0, // 表示する最初の行のインデックス
       endIndex: this.visibleRowCount - 1, // 表示する最後の行のインデックス
-      filterKey: '' // フィルタリングするキーワードを保持するデータ
+      filterKey: '', // フィルタリングするキーワードを保持するデータ
+      selectAll: false // 全選択チェックボックスの状態
     };
   },
   computed: {
@@ -98,15 +101,16 @@ export default {
     updateVisibleRows() {
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
-    selectRow(rowIndex) {
-      if (this.isSelected(rowIndex)) {
-        this.selectedRows = this.selectedRows.filter(row => row !== rowIndex);
+    selectRow(row) {
+      const index = this.data.indexOf(row);
+      if (this.isSelected(row)) {
+        this.selectedRows = this.selectedRows.filter(r => r !== index);
       } else {
-        this.selectedRows.push(rowIndex);
+        this.selectedRows.push(index);
       }
     },
-    isSelected(rowIndex) {
-      return this.selectedRows.includes(rowIndex);
+    isSelected(row) {
+      return this.selectedRows.includes(this.data.indexOf(row));
     },
     selectAllRows(event) {
       if (event.target.checked) {
@@ -115,8 +119,8 @@ export default {
         this.selectedRows = [];
       }
     },
-    handleScroll(event) {
-      const scrollTop = event.target.scrollTop;
+    handleScroll() {
+      const scrollTop = this.$refs.gridBody.scrollTop;
       this.startIndex = Math.floor(scrollTop / this.itemHeight);
       this.endIndex = Math.min(this.startIndex + this.visibleRowCount - 1, this.data.length - 1);
     },
@@ -140,35 +144,23 @@ export default {
   border-collapse: collapse;
 }
 
-.grid-header, .grid-body {
-  display: flex;
-}
-
-.grid-header th, .grid-body td {
+.grid-table th, .grid-table td {
   padding: 8px 12px;
-  border-right: 1px solid #ccc;
+  border: 1px solid #ccc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .checkbox-cell {
-  flex: 0 0 40px; /* チェックボックス列の幅 */
+  width: 40px; /* チェックボックス列の幅 */
 }
 
-.grid-row {
-  display: flex;
+.grid-row:hover {
+  background-color: #f0f0f0;
 }
 
 .selected-row {
   background-color: #cce5ff;
-}
-
-.hovered-row {
-  background-color: #f0f0f0;
-}
-
-.filter {
-  margin-bottom: 10px;
 }
 </style>
